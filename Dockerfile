@@ -11,7 +11,7 @@ FROM ${hostRegistry}/alpine:3.14 AS installer-env
 ARG PS_VERSION=7.3.3
 ARG PS_PACKAGE=powershell-${PS_VERSION}-linux-alpine-x64.tar.gz
 ARG PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE}
-ARG PS_INSTALL_VERSION=7-preview
+ARG PS_INSTALL_VERSION=7
 
 # Download the Linux tar.gz and save it
 ADD ${PS_PACKAGE_URL} /tmp/linux.tar.gz
@@ -835,8 +835,7 @@ RUN \
 
 ####### FINAL IMAGE #######
 # Start a new stage so we lose all the tar.gz layers from the final image
-ARG hostRegistry=psdockercache.azurecr.io
-FROM ${hostRegistry}/alpine:3.13
+FROM alpine:3.13
 
 # Copy only the files we need from the previous stage
 COPY --from=installer-env ["/opt/microsoft/powershell", "/opt/microsoft/powershell"]
@@ -847,7 +846,7 @@ COPY --from=builder /usr/local/bin/ffprobe /usr/local/bin/ffprobe
 
 
 # Define Args and Env needed to create links
-ARG PS_INSTALL_VERSION=7-preview
+ARG PS_INSTALL_VERSION=7
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION \
   \
   # Define ENVs for Localization/Globalization
@@ -867,6 +866,10 @@ RUN apk add --no-cache \
   ncurses-terminfo-base \
   \
   # .NET Core dependencies
+  libcrypto1.1 \
+  libgomp \
+  expat \
+  git \
   krb5-libs \
   libgcc \
   numactl-dev \
@@ -903,8 +906,6 @@ RUN apk add --no-cache \
   # Create the pwsh symbolic link that points to powershell
   && ln -s ${PS_INSTALL_FOLDER}/pwsh /usr/bin/pwsh \
   \
-  # Create the pwsh-preview symbolic link that points to powershell
-  && ln -s ${PS_INSTALL_FOLDER}/pwsh /usr/bin/pwsh-preview \
   # Give all user execute permissions and remove write permissions for others
   && chmod a+x,o-w ${PS_INSTALL_FOLDER}/pwsh \
   # intialize powershell module cache
