@@ -840,8 +840,10 @@ FROM ${hostRegistry}/alpine:3.14
 
 # Copy only the files we need from the previous stage
 COPY --from=installer-env ["/opt/microsoft/powershell", "/opt/microsoft/powershell"]
-COPY --from=handbrake /tmp/HandBrake/build/HandBrakeCLI /HandBrakeCLI
-COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
+COPY --from=handbrake /tmp/HandBrake/build/HandBrakeCLI /usr/local/bin/HandBrakeCLI
+COPY --from=builder /versions.json /
+COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=builder /usr/local/bin/ffprobe /usr/local/bin/ffprobe
 
 
 # Define Args and Env needed to create links
@@ -867,6 +869,20 @@ RUN apk add --no-cache \
   # .NET Core dependencies
   krb5-libs \
   libgcc \
+  numactl-dev \
+  libjpeg-turbo \
+  libass \   
+  lame \
+  libvpx \
+  libtheora \
+  libvorbis \
+  x264-dev \
+  libxml2 \   
+  bzip2 \
+  jansson \
+  opus \
+  speex \   
+  xz-libs \   
   libintl \
   libssl1.1 \
   libstdc++ \
